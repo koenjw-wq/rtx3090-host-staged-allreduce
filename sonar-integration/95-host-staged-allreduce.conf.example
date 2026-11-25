@@ -1,0 +1,4 @@
+[Service]
+Environment=SONAR_HOST_STAGED_ALLREDUCE=1
+Environment=PYTHONPATH=/opt/rtx3090-host-staged-allreduce
+ExecStartPre=/usr/bin/sha256sum --check /opt/rtx3090-host-staged-allreduce/SHA256SUMS
