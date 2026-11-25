@@ -1,0 +1,6 @@
+{"phase": "tuned", "index": 0, "ttft_s": 0.08683789399947273, "decode_tps": 96.00514533645956, "digest": "8ecf5958636e168bdfd8e8951755949564e621a238502cab54f9b1f56794ec9c", "prompt_tokens": 31, "output_tokens": 320}
+{"phase": "tuned", "index": 1, "ttft_s": 0.08134613900074328, "decode_tps": 109.09444105220233, "digest": "fd290acefa19635f35941cca43c8b163763b7a79634e32e298a8b97644bdb625", "prompt_tokens": 32, "output_tokens": 320}
+{"phase": "tuned", "index": 2, "ttft_s": 0.08407136300047569, "decode_tps": 100.40576373829917, "digest": "323a6857a6df52208c9da4ae0480cc0d6bc768ed78d7fc2832248aa3c994596e", "prompt_tokens": 32, "output_tokens": 320}
+{"phase": "tuned", "index": 3, "ttft_s": 0.08575412600112031, "decode_tps": 123.95685305199292, "digest": "03efbd32d446d5dbe508b986c0fc57478f7c4be4b4f3ab47cf9f986ba38b5927", "prompt_tokens": 31, "output_tokens": 320}
+{"phase": "tuned", "index": 4, "ttft_s": 0.07986914799948863, "decode_tps": 99.16912858534462, "digest": "115db881861d4981ddb3039d176c1c4097ccb195dbd8890608b46f88f48b6ce4", "prompt_tokens": 32, "output_tokens": 320}
+{"phase": "tuned", "index": 5, "ttft_s": 0.08918803300002764, "decode_tps": 91.82962572607659, "digest": "c00b78e0c5f0b7ad7a7ba1cd943ef22c011e3d742281fd742200dc87cf5248f2", "prompt_tokens": 31, "output_tokens": 320}
