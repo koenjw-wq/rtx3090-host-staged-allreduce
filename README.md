@@ -10,6 +10,27 @@ The performance improvement was reproduced on both systems, with all reported ou
 
 **No native CUDA peer-to-peer access is required.**
 
+## Sonar integration: measured Qwen TTFT gains — 25 November 2026
+
+The two-worker adapter is now reported operational on both the single-socket and cross-socket RTX 3090 systems. Unlike the standalone prototype, this integration runs inside Sonar 0.26.0 and selects only eligible contiguous BF16 SUM collectives of 40–80 MiB. Other operations, including small decode reductions, retain NCCL.
+
+| System | Prompt tokens | Baseline median TTFT | Adapter after restart | Less elapsed time |
+| --- | ---: | ---: | ---: | ---: |
+| Dual socket, PCIe Gen3 x16 | 5,000 | 2.465 s | 2.262 s | 8.24% |
+| Dual socket, PCIe Gen3 x16 | 9,000 | 4.323 s | 4.055 s | 6.22% |
+| Single socket, PCIe Gen3 x8 | 5,000 | 2.952 s | 2.661 s | 9.9% |
+| Single socket, PCIe Gen3 x8 | 9,000 | 5.264 s | 4.921 s | 6.5% |
+
+The dual-socket integration handover includes comparison data and reports 120 bitwise checks per rank against NCCL. The integrated two-process collective benchmark measured approximately 17–18% less time than earlier NCCL references on that host. The initial API comparison measured 8.22% and 6.55% lower TTFT at 5,000 and 9,000 tokens respectively.
+
+On both systems, all eight benchmark completion texts reportedly matched baseline in both runs, four simultaneous requests passed, and both workers loaded and exercised the adapter after service restart. The single-socket results come from the subsequent deployment report; raw timing files for that machine are not yet included in the supplied handover.
+
+The adapter is persistent across Sonar service starts. On the single-socket system Sonar itself remains manually started to preserve ComfyUI's existing boot behavior. On the dual-socket system service boot enablement was verified; an actual hardware reboot was not qualified.
+
+These are controlled TTFT results, not measured sustained decode throughput gains. Long-context, arbitrary concurrent collective streams and other engine versions require further qualification.
+
+[Sonar integration results and limitations](results/sonar-integration/REPORT.md)
+
 ## Headline results
 
 | Hardware topology | Payload per GPU | Default NCCL | Host pipeline | Less elapsed time |
@@ -38,7 +59,7 @@ Every tested prototype output matched its BF16 reference bit for bit on both GPU
 - No native CUDA P2P, NVLink, or additional hardware required for this algorithm.
 - No driver, firmware, or BIOS modifications are required by the communication algorithm itself.
 
-These findings apply to the measured standalone collective workloads. End-to-end Qwen inference improvements remain unmeasured.
+These findings describe standalone collective workloads. Separate controlled Qwen TTFT improvements are documented in the Sonar integration section above.
 
 ## Hardware and software configurations
 
@@ -389,9 +410,9 @@ The underlying principles of pipelining, pinned host memory and asynchronous CUD
 - These are standalone synthetic collective communication benchmarks.
 - The CUDA prototype uses one process controlling both GPUs.
 - The NCCL reference uses separate worker processes.
-- A matched-process comparison remains necessary to isolate process-model effects.
-- Sonar integration has not yet been completed.
-- End-to-end Qwen prefill improvements remain unmeasured.
+- The original standalone comparison has different process models; a subsequent two-worker adapter benchmark provides additional evidence, but a fully matched comparison remains desirable.
+- The two-worker integration is qualified for the tested Sonar 0.26.0 configuration; broader compatibility remains unverified.
+- Controlled Qwen TTFT improvements have been measured; isolated prefill throughput and longer-context gains remain unverified.
 - End-to-end Qwen decode improvements remain unmeasured.
 - Long-context and concurrent inference correctness remain unverified.
 - Long-running application-level stability remains unverified.
@@ -401,7 +422,7 @@ The underlying principles of pipelining, pinned host memory and asynchronous CUD
 - The implementation has not been validated with native CUDA P2P enabled.
 - Differences in driver versions, CPU platforms and power limits prevent attributing absolute cross-machine timing differences to a single factor.
 
-Future research may investigate multiprocess integration, inference-engine compatibility, additional GPU architectures, different communication topologies and further scheduling optimisations.
+Future research may investigate broader inference-engine compatibility, long-context qualification, additional GPU architectures, different communication topologies and further scheduling optimisations.
 
 ## Original experiment files and evidence
 
