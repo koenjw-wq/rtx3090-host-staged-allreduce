@@ -435,6 +435,8 @@ Use mode 3 for the headline comparison.
 
 ## Dual-socket replication evidence
 
+[Cross-socket replication results summary](results/dual-socket-replication/REPORT.md) — all 16 matched comparisons and methodological limitations. The table below describes the supplied evidence archive; it does not imply that every listed file has been uploaded to GitHub.
+
 The replication evidence package contains:
 
 | File or directory | Contents |
