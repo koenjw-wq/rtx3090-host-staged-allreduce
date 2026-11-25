@@ -32,6 +32,6 @@ The backend uses shared pinned host memory, 1 MiB chunks, independent copy strea
 
 Qualification is limited to the tested ordered collective execution model. Arbitrary independent collective streams, dual batch overlap, additional ranks, multi-node execution, engine upgrades, long-context inference and sustained decode performance need separate validation. Service restart is not equivalent to full hardware reboot qualification. TTFT reductions are not decode throughput gains or universal prefill speedups.
 
-This public summary excludes private deployment paths, credentials, service configuration, model metadata and compiled binaries. The full integration source and raw evidence are not included in this summary.
+This public summary excludes private deployment paths, credentials, service configuration, model metadata and compiled binaries. The integration source and reproduction guide are available in [sonar-integration](../../sonar-integration/README.md). The complete raw evidence archive is not included in this summary.
 
 See the [main README](../../README.md) for the original standalone experiments.
