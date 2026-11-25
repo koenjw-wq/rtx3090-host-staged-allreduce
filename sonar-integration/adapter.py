@@ -31,6 +31,7 @@ _original_reduce = PyNcclCommunicator.all_reduce
 def initialize(self, *args, **kwargs):
     self._host_staged_handle = None
     self._host_staged_used = False
+    self._host_staged_observed_sizes = set()
     self._host_staged_lock = threading.Lock()
     _original_init(self, *args, **kwargs)
     if not self.available or self.disabled or self.world_size != 2:
@@ -68,7 +69,7 @@ def initialize(self, *args, **kwargs):
         raise RuntimeError('Host pipeline initialization failed: ' + repr(errors))
     self._host_staged_handle = handle
     _contexts.append(handle)
-    logger.warning('HOST_STAGED_READY rank=%s device=%s range=40..80MiB chunk=1MiB', self.rank, self.device)
+    logger.warning('HOST_STAGED_READY rank=%s device=%s range=5..80MiB chunk=1MiB', self.rank, self.device)
 
 
 def all_reduce(self, in_tensor, out_tensor=None, op=dist.ReduceOp.SUM, stream=None):
@@ -76,7 +77,7 @@ def all_reduce(self, in_tensor, out_tensor=None, op=dist.ReduceOp.SUM, stream=No
     size = in_tensor.numel() * in_tensor.element_size()
     eligible = (handle is not None and not self.disabled and op == dist.ReduceOp.SUM
                 and in_tensor.dtype == torch.bfloat16 and in_tensor.is_contiguous()
-                and in_tensor.device == self.device and 40 * 2**20 <= size <= 80 * 2**20)
+                and in_tensor.device == self.device and 5 * 2**20 <= size <= 80 * 2**20)
     if out_tensor is not None:
         eligible = (eligible and out_tensor.dtype == in_tensor.dtype
                     and out_tensor.device == in_tensor.device and out_tensor.is_contiguous()
@@ -86,6 +87,10 @@ def all_reduce(self, in_tensor, out_tensor=None, op=dist.ReduceOp.SUM, stream=No
     if not self._host_staged_used:
         logger.warning('HOST_STAGED_FIRST_USE rank=%s bytes=%s', self.rank, size)
         self._host_staged_used = True
+    observed = self._host_staged_observed_sizes
+    if size not in observed and len(observed) < 16:
+        observed.add(size)
+        logger.warning('HOST_STAGED_SIZE rank=%s bytes=%s', self.rank, size)
     if out_tensor is None:
         out_tensor = torch.empty_like(in_tensor)
     if stream is None:

@@ -12,7 +12,24 @@ The performance improvement was reproduced on both systems, with all reported ou
 
 ## Sonar integration: measured Qwen TTFT gains — 25 November 2026
 
-The two-worker adapter is now reported operational on both the single-socket and cross-socket RTX 3090 systems. Unlike the standalone prototype, this integration runs inside Sonar 0.26.0 and selects only eligible contiguous BF16 SUM collectives of 40–80 MiB. Other operations, including small decode reductions, retain NCCL.
+The current two-worker adapter in Sonar 0.26.0 selects eligible contiguous BF16 SUM collectives of **5–80 MiB** on the tested dual RTX 3090 configuration. Other operations, including small decode reductions, retain NCCL.
+
+### Medium-prompt update
+
+The table compares the new 5 MiB cutoff with the previous 40 MiB cutoff after a full Sonar service restart on each server.
+
+| GPU topology | Prompt tokens | Previous TTFT | New TTFT | Less time |
+| --- | ---: | ---: | ---: | ---: |
+| Same NUMA node | 2,048 | 1.208 s | 1.133 s | +6.17% |
+| Same NUMA node | 3,072 | 1.795 s | 1.639 s | +8.70% |
+| Cross-socket | 2,048 | 1.014 s | 0.961 s | +5.18% |
+| Cross-socket | 3,072 | 1.482 s | 1.390 s | +6.25% |
+
+All 54 paired API responses per server matched by text digest and token counts. Both GPU workers exercised the expanded range in live inference, and four concurrent requests passed on each server. [Medium-prompt methodology and raw evidence](results/sonar-medium-reductions/REPORT.md)
+
+### Original 40 MiB cutoff results
+
+The following historical table uses the original NCCL baseline and the first 40–80 MiB adapter. The two tables use different baselines and prompt sets.
 
 | System | Prompt tokens | Baseline median TTFT | Adapter after restart | Less elapsed time |
 | --- | ---: | ---: | ---: | ---: |
@@ -31,7 +48,7 @@ These are controlled TTFT results, not measured sustained decode throughput gain
 
 [Sonar integration results and limitations](results/sonar-integration/REPORT.md)
 
-**Reproduce the integration:** [Sonar build, validation, installation and rollback guide](sonar-integration/README.md). The original two-worker CUDA backend, Python adapter, startup hook, validation and API benchmark scripts are now published with source checksums. Build the native library locally.
+**Reproduce the integration:** [Sonar build, validation, installation and rollback guide](sonar-integration/README.md). The two-worker CUDA backend, current Python adapter, startup hook, validation and API benchmark scripts are published with source checksums. Build the native library locally.
 
 ## Headline results
 

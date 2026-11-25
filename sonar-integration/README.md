@@ -49,11 +49,11 @@ SONAR_HOST_STAGED_ALLREDUCE=1 PYTHONPATH="$PWD${PYTHONPATH:+:$PYTHONPATH}" \
 cat validation-local.jsonl
 ```
 
-Expect PASS on both ranks, 120 bitwise checks per rank and 24 graph replays. The test covers in-place/out-of-place SUM, boundary and partial-chunk sizes, fallback cases, changing inputs, graph replay and delayed ranks. If the command fails or correctness differs, do not install. Check memory availability, driver errors and environment compatibility.
+Expect PASS on both ranks, 152 bitwise checks per rank and 24 graph replays. The test covers in-place/out-of-place SUM, boundary and partial-chunk sizes, fallback cases, changing inputs, graph replay and delayed ranks. If the command fails or correctness differs, do not install. Check memory availability, driver errors and environment compatibility.
 
 ## 4. Activate the adapter
 
-Python imports sitecustomize at startup. When SONAR_HOST_STAGED_ALLREDUCE=1, it installs the adapter into PyNcclCommunicator before worker initialization. Only compatible contiguous BF16 SUM calls from 40 to 80 MiB inclusive use the custom backend; all other calls delegate to the original method. Startup initialization failure is fatal rather than silently continuing. A peer timeout (60 seconds) may terminate the CUDA context.
+Python imports sitecustomize at startup. When SONAR_HOST_STAGED_ALLREDUCE=1, it installs the adapter into PyNcclCommunicator before worker initialization. Only compatible contiguous BF16 SUM calls from 5 to 80 MiB inclusive use the custom backend; all other calls delegate to the original method. Startup initialization failure is fatal rather than silently continuing. A peer timeout (60 seconds) may terminate the CUDA context.
 
 For a temporary manual test, start the existing Sonar launch command from the same environment with SONAR_HOST_STAGED_ALLREDUCE=1 and PYTHONPATH containing the absolute integration directory. Ensure that both workers inherit these variables. Do not change model or scheduler settings between runs. Run the API checks below before persistent installation.
 
@@ -84,7 +84,7 @@ sudo journalctl -u "$SERVICE" --since today | grep -E 'HOST_STAGED_READY|HOST_ST
 curl --fail http://127.0.0.1:2242/health
 ```
 
-Model loading can take several minutes. Look for HOST_STAGED_READY on both ranks, then HOST_STAGED_FIRST_USE on both ranks when an eligible collective runs. A local opt-in variable warning from Sonar may be expected because sitecustomize handles it.
+Model loading can take several minutes. Look for HOST_STAGED_READY on both ranks, then HOST_STAGED_FIRST_USE on both ranks when an eligible collective runs. HOST_STAGED_SIZE records up to 16 distinct eligible sizes per communicator. Verify that both ranks actually use a size below 40 MiB during live requests when comparing the lower cutoff. A local opt-in variable warning from Sonar may be expected because sitecustomize handles it.
 
 ## 5. Compare real API performance and restart behavior
 
@@ -139,3 +139,24 @@ Choose a fresh backup location if the destination already exists. Confirm that t
 ## Scope and provenance
 
 The six source scripts and example service override are copied byte-for-byte from the original integration handover. The source SHA-256 manifest permits verification. Build locally; no precompiled native library, private service configuration, credentials or model files are distributed. The root [GPL-3.0 license](../LICENSE) accompanies the implementation. See [results](../results/sonar-integration/REPORT.md) for measured findings. Results depend on the hardware, model, driver, workload and runtime; broader engine versions, long contexts, arbitrary collective streams and multi-node systems remain unqualified.
+
+
+## Compare the 5 MiB cutoff with a previous 40 MiB deployment
+
+Preserve the old installation and match the model, scheduler, hardware, and service settings across both arms. Run the baseline with the old cutoff and an idle model. Use a separate installation directory for the candidate, back up the existing drop-in, and adapt both the Python path and integrity-check path to that directory. Keep the existing startup hook behavior. On Ubuntu, the same-NUMA qualification chained the system Python hook before loading the adapter. Use the default hook on installations without an earlier hook to preserve.
+
+```bash
+# Run under the original 40 MiB cutoff first.
+python3 api_bench.py incumbent --sizes 256 512 1024 2048 3072 5000 9000
+
+# Switch the service to the new adapter and wait for the health endpoint.
+python3 api_bench.py candidate --sizes 256 512 1024 2048 3072 5000 9000
+python3 compare_api.py candidate --qualify
+
+# Restart the candidate service, wait for health, then repeat the shorter sweep.
+python3 api_bench.py restart --sizes 512 2048 3072 --rounds 3
+python3 compare_api.py restart
+python3 test-batch.py
+```
+
+The benchmark assigns a distinct prefix-cache salt to every request and verifies identical outputs by SHA-256. See [the two-server evidence](../results/sonar-medium-reductions/REPORT.md) for the measured gains and limits.

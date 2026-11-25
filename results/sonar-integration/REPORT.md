@@ -1,5 +1,7 @@
 # Sonar 0.26.0 integration — 25 November 2026
 
+This is the original 40 MiB cutoff qualification. The current adapter was subsequently qualified with a 5 MiB cutoff. See [the medium-prompt follow-up](../sonar-medium-reductions/REPORT.md) for the separate A/B comparison.
+
 The host-staged BF16 all-reduce has progressed from a single-process prototype to a two-worker Sonar adapter. It selects contiguous BF16 SUM collectives of 40–80 MiB inclusive on the qualified two-GPU configuration; other sizes, dtypes and operations retain the original NCCL path. Small decode reductions continue to use NCCL.
 
 ## Cross-socket server (PCIe Gen3 x16, SYS)

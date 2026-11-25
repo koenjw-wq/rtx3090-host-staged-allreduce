@@ -24,7 +24,9 @@ def compare(actual, expected):
     checks += 1
 
 
-for size in [40 * 2**20, 40 * 2**20 + 514, 64 * 2**20, 80 * 2**20, 5120 * 2, 80 * 2**20 + 514]:
+sizes = [5 * 2**20 - 2, 5 * 2**20, 5 * 2**20 + 514, 10 * 2**20, 20 * 2**20,
+         30 * 2**20, 40 * 2**20, 80 * 2**20, 5120 * 2, 80 * 2**20 + 514]
+for size in sizes:
     for iteration in range(4):
         torch.manual_seed(3090 + rank + 100 * iteration)
         tensor = torch.randn(size // 2, device=rank, dtype=torch.bfloat16)
@@ -36,7 +38,7 @@ for size in [40 * 2**20, 40 * 2**20 + 514, 64 * 2**20, 80 * 2**20, 5120 * 2, 80 
 
 # Multiple differently sized collectives in the same captured graph, including
 # partial chunks. Repeated inputs change after capture, and one rank is delayed.
-inputs = [torch.empty(size // 2, device=rank, dtype=torch.bfloat16) for size in [40 * 2**20, 80 * 2**20, 40 * 2**20 + 514]]
+inputs = [torch.empty(size // 2, device=rank, dtype=torch.bfloat16) for size in [5 * 2**20 + 514, 20 * 2**20, 80 * 2**20]]
 for tensor in inputs:
     tensor.fill_(rank + 1)
 side = torch.cuda.Stream()
@@ -60,6 +62,9 @@ for iteration in range(24):
     graph.replay()
     for output, reference in zip(outputs, references):
         compare(output, reference)
+
+eligible_sizes = {n for n in sizes if 5 * 2**20 <= n <= 80 * 2**20}
+assert comm._host_staged_observed_sizes == eligible_sizes
 
 small = torch.full((32,), rank + 1, device=rank, dtype=torch.float32)
 assert torch.all(comm.all_reduce(small, op=dist.ReduceOp.MAX) == 2)

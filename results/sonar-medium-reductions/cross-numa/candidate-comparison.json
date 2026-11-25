@@ -1,0 +1,40 @@
+{
+  "responses_matched": 42,
+  "ttft": {
+    "256": {
+      "incumbent_s": 0.2139258349998272,
+      "candidate_s": 0.2028742599995894,
+      "less_ttft_percent": 5.1660777672069
+    },
+    "512": {
+      "incumbent_s": 0.2890563149994705,
+      "candidate_s": 0.28684248799982015,
+      "less_ttft_percent": 0.765880862922641
+    },
+    "1024": {
+      "incumbent_s": 0.5161040170005435,
+      "candidate_s": 0.49111215499942773,
+      "less_ttft_percent": 4.8424079600003385
+    },
+    "2048": {
+      "incumbent_s": 1.01388783999937,
+      "candidate_s": 0.9508423959996435,
+      "less_ttft_percent": 6.218187210901527
+    },
+    "3072": {
+      "incumbent_s": 1.4823570490007114,
+      "candidate_s": 1.3947698499996477,
+      "less_ttft_percent": 5.908643876325758
+    },
+    "5000": {
+      "incumbent_s": 2.262582356001076,
+      "candidate_s": 2.2686347489998298,
+      "less_ttft_percent": -0.267499345723321
+    },
+    "9000": {
+      "incumbent_s": 4.053620968999894,
+      "candidate_s": 3.9847666660007235,
+      "less_ttft_percent": 1.698587596761869
+    }
+  }
+}

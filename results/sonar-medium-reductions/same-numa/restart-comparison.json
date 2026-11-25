@@ -1,0 +1,20 @@
+{
+  "responses_matched": 12,
+  "ttft": {
+    "512": {
+      "incumbent_s": 0.3383455839975795,
+      "candidate_s": 0.321470661998319,
+      "less_ttft_percent": 4.987481083654776
+    },
+    "2048": {
+      "incumbent_s": 1.2076254159983364,
+      "candidate_s": 1.1330791629989108,
+      "less_ttft_percent": 6.172961583273628
+    },
+    "3072": {
+      "incumbent_s": 1.7951010020005924,
+      "candidate_s": 1.6388786130009976,
+      "less_ttft_percent": 8.702707470247583
+    }
+  }
+}
