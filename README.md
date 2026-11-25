@@ -31,6 +31,8 @@ These are controlled TTFT results, not measured sustained decode throughput gain
 
 [Sonar integration results and limitations](results/sonar-integration/REPORT.md)
 
+**Reproduce the integration:** [Sonar build, validation, installation and rollback guide](sonar-integration/README.md). The original two-worker CUDA backend, Python adapter, startup hook, validation and API benchmark scripts are now published with source checksums. Build the native library locally.
+
 ## Headline results
 
 | Hardware topology | Payload per GPU | Default NCCL | Host pipeline | Less elapsed time |
